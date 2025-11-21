@@ -1,0 +1,58 @@
+<!-- signup.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EliteDrive — Sign up</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body{background:linear-gradient(180deg,#042a28,#011515); min-height:100vh}
+    .card{backdrop-filter: blur(6px); background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.04)}
+    .slide{opacity:0; transform:translateY(20px); transition:all .6s}
+    .slide.show{opacity:1; transform:none}
+  </style>
+</head>
+<body class="flex items-center justify-center">
+  <div class="w-full max-w-lg mx-6 mt-20">
+    <div class="card rounded-2xl p-8 shadow-2xl slide" id="box">
+      <h2 class="text-2xl font-bold mb-2 text-white">Create an account</h2>
+      <p class="text-sm text-gray-300 mb-6">Join EliteDrive and book your first lesson</p>
+      <form id="signupForm" class="space-y-4" method = 'post'>
+        {% csrf_token %}
+        <input name="username" required type="text" placeholder="Username" class="w-full p-3 rounded-lg bg-transparent border border-gray-700" />
+        <input name="email" required type="email" placeholder="Email" class="w-full p-3 rounded-lg bg-transparent border border-gray-700" />
+        <input name="password" required type="password" placeholder="Password" class="w-full p-3 rounded-lg bg-transparent border border-gray-700" />
+        <div class="flex items-center gap-2">
+          <input id="terms" type="checkbox" required />
+          <label for="terms" class="text-sm text-gray-300">I agree to terms</label>
+        </div>
+        <button type = 'submit' class="w-full py-3 rounded-lg" style="background:linear-gradient(90deg,#0f9d58,#046f52); color:#fff">Sign up</button>
+      </form>
+      <p class="mt-4 text-sm text-gray-300">Already registered? <a href="{% url 'account:login'%}" class="underline">Sign in</a></p>
+      {% if messages %}
+      <div class="error-messages">
+        {% for message in messages %}
+            <p style = "
+            color:#c00;           /* dark red text */
+            border-top:1px solid: rgba(227, 204, 204, 1);
+            border-bottom:1px solid: rgba(227, 204, 204, 1);
+            border-right:1px solid: rgba(227, 204, 204, 1);
+            padding:0.8rem 1rem;
+            margin:1rem 0;
+            border-radius:4px;
+            border-left:2px solid #c00;
+            font-family:Arial,Helvetica,sans-serif;
+            font-size:0.95rem;">{{ message }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+<script>
+    window.addEventListener('load', ()=> document.getElementById('box').classList.add('show'));
+  </script>
+
+</body>
+</html>

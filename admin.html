@@ -1,0 +1,123 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EliteDrive — Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body{background:linear-gradient(180deg,#071818,#041111); color:#e6fff5; min-height:100vh}
+    .side{width:260px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); backdrop-filter:blur(6px); border-right:1px solid rgba(255,255,255,0.03)}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.03); backdrop-filter: blur(6px)}
+    .danger{background:transparent; border:1px solid rgba(255,0,0,0.12); color:#ffb5b5}
+  </style>
+</head>
+<body class="flex">
+  <!-- SIDEBAR -->
+  <aside class="side min-h-screen p-6">
+    <h3 class="font-bold text-lg mb-6">EliteDrive Admin</h3>
+    <nav class="flex flex-col gap-2 text-sm">
+      <a href="#" class="py-2 px-3 rounded bg-green-700 text-white">Dashboard</a>
+      <a href="{% url 'courses' %}" class="py-2 px-3 rounded hover:bg-gray-800">Courses</a>
+      <a href="{% url 'user'%}" class="py-2 px-3 rounded hover:bg-gray-800">Users</a>
+    </nav>
+
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 p-8">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold">Courses</h2>
+      <div class="flex items-center gap-3">
+        <button id="openAdd" class="px-4 py-2 rounded bg-green-600">Add Course</button>
+      </div>
+    </div>
+
+    <div id="stats" class="grid grid-cols-3 gap-4 mb-6">
+      <div class="card p-4 rounded-lg"><div class="text-sm">Total courses</div><div id="statCourses" class="text-2xl font-bold"></div></div>
+      <div class="card p-4 rounded-lg"><div class="text-sm">Total users</div><div id="statUsers" class="text-2xl font-bold"></div></div>
+      <div class="card p-4 rounded-lg"><div class="text-sm">Enrolments</div><div id="statEnroll" class="text-2xl font-bold"></div></div>
+    </div>
+
+    <div id="coursesTable" class="card p-4 rounded-lg">
+      <!-- table populated by JS -->
+    </div>
+  </main>
+
+  <!-- Add modal (hidden) -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white text-black rounded-lg p-6 w-full max-w-md">
+      <h3 class="font-bold mb-3">Add New Course</h3>
+      <form id="addForm" class="space-y-3">
+        <input name="title" required placeholder="Title" class="w-full p-2 border rounded" />
+        <input name="price" required type="number" placeholder="Price" class="w-full p-2 border rounded" />
+        <textarea name="desc" required placeholder="Short description" class="w-full p-2 border rounded"></textarea>
+        <div class="flex justify-end gap-2">
+          <button type="button" id="closeModal" class="px-3 py-1 rounded border">Cancel</button>
+          <button class="px-3 py-1 rounded bg-green-600 text-white">Add</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // seed if needed
+    const seed = [
+      {id:1, title:'Beginner Course', desc:'12 lessons • Manual car', price:120},
+      {id:2, title:'Refresher Course', desc:'6 lessons • Flexible', price:80},
+      {id:3, title:'Test Preparation', desc:'Mock tests & tips', price:70}
+    ];
+    if(!localStorage.getItem('ed_courses')) localStorage.setItem('ed_courses', JSON.stringify(seed));
+    if(!localStorage.getItem('ed_users')) localStorage.setItem('ed_users', JSON.stringify([{id:999, name:'Admin', email:'admin@elitedrive.com'}]));
+
+    const modal = document.getElementById('modal');
+    document.getElementById('openAdd').addEventListener('click', ()=> modal.classList.remove('hidden'), false);
+    document.getElementById('closeModal').addEventListener('click', ()=> modal.classList.add('hidden'));
+    document.getElementById('addForm').addEventListener('submit', e=>{
+      e.preventDefault();
+      const t = e.target.title.value, p = Number(e.target.price.value), d = e.target.desc.value;
+      const list = JSON.parse(localStorage.getItem('ed_courses')||'[]');
+      const id = list.length ? Math.max(...list.map(x=>x.id))+1 : 1;
+      list.push({id, title:t, desc:d, price:p});
+      localStorage.setItem('ed_courses', JSON.stringify(list));
+      modal.classList.add('hidden'); renderCoursesTable(); renderStats();
+      e.target.reset();
+    });
+
+    function renderCoursesTable(){
+      const cs = JSON.parse(localStorage.getItem('ed_courses')||'[]');
+      const html = `<table class="w-full text-left">
+        <thead><tr class="text-xs text-gray-400"><th class="py-2">Title</th><th>Desc</th><th>Price</th><th>Actions</th></tr></thead>
+        <tbody>` + cs.map(c=>`
+          <tr class="border-t border-gray-800">
+            <td class="py-3">${c.title}</td>
+            <td>${c.desc}</td>
+            <td>$${c.price}</td>
+            <td><button data-id="${c.id}" class="del px-3 py-1 rounded danger">Delete</button></td>
+          </tr>`).join('') + `</tbody></table>`;
+      document.getElementById('coursesTable').innerHTML = html;
+      document.querySelectorAll('.del').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          if(!confirm('Delete this course?')) return;
+          const id = Number(b.dataset.id);
+          let cs = JSON.parse(localStorage.getItem('ed_courses')||'[]');
+          cs = cs.filter(x=> x.id !== id);
+          localStorage.setItem('ed_courses', JSON.stringify(cs));
+          renderCoursesTable(); renderStats();
+        });
+      });
+    }
+
+    function renderStats(){
+      const cs = JSON.parse(localStorage.getItem('ed_courses')||'[]');
+      const us = JSON.parse(localStorage.getItem('ed_users')||'[]');
+      const en = JSON.parse(localStorage.getItem('ed_enrolled')||'[]');
+      document.getElementById('statCourses').textContent = cs.length;
+      document.getElementById('statUsers').textContent = us.length;
+      document.getElementById('statEnroll').textContent = en.length;
+    }
+
+    renderCoursesTable(); renderStats();
+  </script>
+</body>
+</html>

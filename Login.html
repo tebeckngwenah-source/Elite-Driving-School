@@ -1,0 +1,57 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EliteDrive — Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root{--g1:#0f9d58}
+    body{background:linear-gradient(135deg,#031b1a 0%, #042a28 60%); min-height:100vh}
+    .card{backdrop-filter: blur(8px); background:linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.06)}
+    .slide{opacity:0; transform:translateY(20px); transition: all .6s cubic-bezier(.2,.9,.2,1)}
+    .slide.show{opacity:1; transform:none}
+    .btn{background:linear-gradient(90deg,var(--g1),#046f52); color:white}
+  </style>
+</head>
+<body class="flex items-center justify-center">
+  <div class="w-full max-w-md mx-6 mt-24">
+    <div class="card rounded-2xl p-8 shadow-2xl slide" id="card">
+      <h2 class="text-2xl font-bold mb-2 text-white">Welcome back</h2>
+      <p class="text-sm text-gray-300 mb-6">Sign in to your student account</p>
+      <form id="loginForm" class="space-y-5" method = 'post'>
+        {% csrf_token %}
+        <input required name="email" type="email" placeholder="Email" class="w-full p-3 rounded-lg bg-transparent border border-gray-700 outline-none" />
+        <input required name="password" type="password" placeholder="Password" class="w-full p-3 rounded-lg bg-transparent border border-gray-700 outline-none" />
+        <button type = 'submit' class="w-full py-2 rounded-lg btn"> Sign In</a></button>
+      </form>
+      <div class="mt-4 text-sm text-gray-300 flex justify-between">
+        <a href="{% url 'account:signup'%}" class="underline">Create account</a>
+        <a href="#" class="underline">Forgot?</a>
+      </div>
+          {% if messages %}
+            <div class="error-messages">
+            {% for message in messages %}
+                <p style = "
+                color:#c00;           /* dark red text */
+                border-top:1px solid: rgba(227, 204, 204, 1);
+                border-bottom:1px solid: rgba(227, 204, 204, 1);
+                border-right:1px solid: rgba(227, 204, 204, 1);
+                padding:0.8rem 1rem;
+                margin:1rem 0;
+                border-radius:4px;
+                border-left:2px solid #c00;
+                font-family:Arial,Helvetica,sans-serif;
+                font-size:0.95rem;">{{ message }}</p>
+            {% endfor %}
+            </div>
+          {% endif %}
+    </div>
+  </div>
+  <script>
+    // simple show
+    window.addEventListener('load', ()=> document.getElementById('card').classList.add('show'));
+    // mock sign-in: save user to localStorage and go to dashboard
+  </script>
+</body>
+</html>
